@@ -113,6 +113,11 @@ export interface IHistoricData {
 
   // Comma-separated list of imputed field names
   ImputedFields?: string;
+
+  // Neighbor contribution fields for imputed values (JSON strings with building IDs and weights)
+  NeighborsElectricityUse?: string;
+  NeighborsNaturalGasUse?: string;
+  NeighborsTotalGHGEmissions?: string;
 }
 
 /**

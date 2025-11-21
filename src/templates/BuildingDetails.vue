@@ -76,6 +76,10 @@ query ($id: ID!, $ID: String) {
           DistrictSteamUse
           DistrictChilledWaterUse
           ImputedFields
+          # Neighbor contribution fields
+          NeighborsElectricityUse
+          NeighborsNaturalGasUse
+          NeighborsTotalGHGEmissions
           # Grade data
           GHGIntensityPercentileGrade,
           GHGIntensityLetterGrade,
