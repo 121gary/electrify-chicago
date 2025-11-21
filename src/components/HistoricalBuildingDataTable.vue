@@ -104,7 +104,17 @@
             {{ benchmark.GHGIntensity }}
             <span
               v-if="isFieldImputed(benchmark, 'GHGIntensity')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'GHGIntensity')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'GHGIntensity'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -114,7 +124,17 @@
             {{ benchmark.TotalGHGEmissions | optionalFloat }}
             <span
               v-if="isFieldImputed(benchmark, 'TotalGHGEmissions')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'TotalGHGEmissions')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'TotalGHGEmissions'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -156,7 +176,17 @@
             {{ benchmark.ElectricityUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'ElectricityUse')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'ElectricityUse')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'ElectricityUse'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -166,7 +196,17 @@
             {{ benchmark.NaturalGasUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'NaturalGasUse')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'NaturalGasUse')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'NaturalGasUse'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -176,7 +216,17 @@
             {{ benchmark.DistrictSteamUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictSteamUse')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'DistrictSteamUse')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'DistrictSteamUse'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -186,7 +236,17 @@
             {{ benchmark.DistrictChilledWaterUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictChilledWaterUse')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'DistrictChilledWaterUse')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'DistrictChilledWaterUse'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -197,7 +257,17 @@
             {{ benchmark.SourceEUI }}
             <span
               v-if="isFieldImputed(benchmark, 'SourceEUI')"
-              v-tooltip.html="getImputedTooltip(benchmark, 'SourceEUI')"
+              v-tooltip.html.left="{
+                content: getImputedTooltip(benchmark, 'SourceEUI'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+                popperOptions: {
+                  modifiers: {
+                    preventOverflow: { enabled: true },
+                    hide: { enabled: false }
+                  }
+                }
+              }"
               class="imputed-indicator"
             >
               *
@@ -297,7 +367,6 @@ export default class HistoricalBuildingTable extends Vue {
 
       if (neighborDataStr && neighborDataStr.trim()) {
         try {
-          // Parse the JSON array of neighbor contributions
           const neighbors = JSON.parse(neighborDataStr);
 
           if (Array.isArray(neighbors) && neighbors.length > 0) {
@@ -313,9 +382,24 @@ export default class HistoricalBuildingTable extends Vue {
             topNeighbors.forEach((neighbor: any) => {
               const weight = neighbor.weight || 0;
               const percentage = Math.round(weight * 100);
-              const buildingName = neighbor.building_name || `Building ${neighbor.building_id || 'Unknown'}`;
+              let buildingName = neighbor.building_name || `Building ${neighbor.building_id || 'Unknown'}`;
 
-              tooltip += `<li>${buildingName}: ${percentage}% contribution</li>`;
+              // Add year indicator if name is from a different year
+              if (neighbor.name_from_year) {
+                buildingName += ` <span class="name-year-note">(name from ${neighbor.name_from_year} records)</span>`;
+              }
+
+              const address = neighbor.address || 'Address not available';
+              const propertyType = neighbor.property_type || 'Type not available';
+              const sqft = neighbor.square_footage
+                ? Math.round(neighbor.square_footage).toLocaleString() + ' sqft'
+                : 'Size not available';
+
+              tooltip += `<li class="neighbor-item">`;
+              tooltip += `<div class="neighbor-name">${buildingName} (${percentage}% contribution)</div>`;
+              tooltip += `<div class="neighbor-details">${address}</div>`;
+              tooltip += `<div class="neighbor-details">${propertyType} • ${sqft}</div>`;
+              tooltip += `</li>`;
             });
 
             if (neighbors.length > 5) {
@@ -502,6 +586,16 @@ table.historical-data {
 }
 
 // Tooltip styling for imputed value details
+// Use :deep to target v-tooltip generated elements
+:deep(.tooltip) {
+  // Prevent tooltip from interfering with mouse events to avoid flashing
+  pointer-events: none;
+}
+
+:deep(.tooltip-inner) {
+  pointer-events: none;
+}
+
 .tooltip {
   .imputed-tooltip-title {
     margin: 0 0 0.5rem 0;
@@ -528,15 +622,39 @@ table.historical-data {
       margin: 0.25rem 0;
       font-size: 0.8125rem;
 
-      li {
-        margin: 0.125rem 0;
-        padding-left: 0;
+      .neighbor-item {
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        padding-left: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.25rem;
+        border-left: 3px solid rgba(255, 255, 255, 0.3);
 
-        &.more-neighbors {
-          font-style: italic;
-          opacity: 0.8;
-          margin-top: 0.25rem;
+        .neighbor-name {
+          font-weight: bold;
+          margin-bottom: 0.25rem;
+          font-size: 0.875rem;
+
+          .name-year-note {
+            font-weight: normal;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-style: italic;
+          }
         }
+
+        .neighbor-details {
+          font-size: 0.75rem;
+          opacity: 0.9;
+          margin-top: 0.125rem;
+        }
+      }
+
+      .more-neighbors {
+        font-style: italic;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+        padding-left: 0;
       }
     }
   }
