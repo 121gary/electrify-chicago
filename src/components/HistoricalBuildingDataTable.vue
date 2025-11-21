@@ -69,7 +69,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="benchmark in historicBenchmarks" :key="benchmark.DataYear">
+        <tr
+          v-for="benchmark in historicBenchmarks"
+          :key="benchmark.DataYear"
+          :class="{ 'has-imputed-data': benchmark.ImputedFields && benchmark.ImputedFields !== '' }"
+        >
           <td class="bold">{{ benchmark.DataYear }}</td>
 
           <!-- Only show any grades if the average exists for that year, otherwise it's
@@ -100,7 +104,7 @@
             />
           </td>
 
-          <td>
+          <td :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'GHGIntensity') }">
             {{ benchmark.GHGIntensity }}
             <span
               v-if="isFieldImputed(benchmark, 'GHGIntensity')"
@@ -120,7 +124,7 @@
               *
             </span>
           </td>
-          <td>
+          <td :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'TotalGHGEmissions') }">
             {{ benchmark.TotalGHGEmissions | optionalFloat }}
             <span
               v-if="isFieldImputed(benchmark, 'TotalGHGEmissions')"
@@ -172,7 +176,10 @@
               :show-labels="false"
             />
           </td>
-          <td v-if="renderedColumns.includes('ElectricityUse')">
+          <td
+            v-if="renderedColumns.includes('ElectricityUse')"
+            :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'ElectricityUse') }"
+          >
             {{ benchmark.ElectricityUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'ElectricityUse')"
@@ -192,7 +199,10 @@
               *
             </span>
           </td>
-          <td v-if="renderedColumns.includes('NaturalGasUse')">
+          <td
+            v-if="renderedColumns.includes('NaturalGasUse')"
+            :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'NaturalGasUse') }"
+          >
             {{ benchmark.NaturalGasUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'NaturalGasUse')"
@@ -212,7 +222,10 @@
               *
             </span>
           </td>
-          <td v-if="renderedColumns.includes('DistrictSteamUse')">
+          <td
+            v-if="renderedColumns.includes('DistrictSteamUse')"
+            :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'DistrictSteamUse') }"
+          >
             {{ benchmark.DistrictSteamUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictSteamUse')"
@@ -232,7 +245,10 @@
               *
             </span>
           </td>
-          <td v-if="renderedColumns.includes('DistrictChilledWaterUse')">
+          <td
+            v-if="renderedColumns.includes('DistrictChilledWaterUse')"
+            :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'DistrictChilledWaterUse') }"
+          >
             {{ benchmark.DistrictChilledWaterUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictChilledWaterUse')"
@@ -253,7 +269,7 @@
             </span>
           </td>
 
-          <td>
+          <td :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'SourceEUI') }">
             {{ benchmark.SourceEUI }}
             <span
               v-if="isFieldImputed(benchmark, 'SourceEUI')"
@@ -286,6 +302,11 @@
         </tr>
       </tbody>
     </table>
+
+    <p v-if="hasImputedData" class="imputed-legend">
+      <span class="imputed-indicator">*</span> = Estimated value based on similar buildings (hover for details)
+      <span class="imputed-count">{{ imputedYearsCount }} of {{ historicBenchmarks.length }} years contain estimated data</span>
+    </p>
   </div>
 </template>
 
@@ -480,6 +501,24 @@ export default class HistoricalBuildingTable extends Vue {
     return { elecPrcnt, otherPrcnt, natGasPrcnt };
   }
 
+  /**
+   * Check if any benchmark has imputed data
+   */
+  get hasImputedData(): boolean {
+    return this.historicBenchmarks.some(
+      (benchmark) => benchmark.ImputedFields && benchmark.ImputedFields !== ''
+    );
+  }
+
+  /**
+   * Count how many years have imputed data
+   */
+  get imputedYearsCount(): number {
+    return this.historicBenchmarks.filter(
+      (benchmark) => benchmark.ImputedFields && benchmark.ImputedFields !== ''
+    ).length;
+  }
+
   created(): void {
     this.renderedColumns = this.getRenderedColumns();
   }
@@ -580,6 +619,14 @@ table.historical-data {
     background-color: $grey-light;
   }
 
+  tbody tr.has-imputed-data {
+    border-left: 3px solid #ff6b6b;
+  }
+
+  td.has-imputed-value {
+    background-color: rgba(255, 107, 107, 0.08);
+  }
+
   .letter-grade {
     font-size: 1.25rem;
 
@@ -596,7 +643,37 @@ table.historical-data {
     font-weight: bold;
     cursor: help;
     margin-left: 2px;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    display: inline-block;
+    animation: pulse-subtle 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+}
+
+.imputed-legend {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: #ff6b6b;
+  font-style: italic;
+
+  .imputed-indicator {
+    cursor: default;
+  }
+
+  .imputed-count {
+    margin-left: 1rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(255, 107, 107, 0.4);
+    font-weight: 500;
   }
 }
 

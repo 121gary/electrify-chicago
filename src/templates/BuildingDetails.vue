@@ -588,6 +588,24 @@ query ($id: ID!, $ID: String) {
 
           <h2>Full Historical Data Table for {{ propertyName }}</h2>
 
+          <details class="imputation-info" v-if="hasImputedData">
+            <summary>About Estimated Data Values</summary>
+            <div class="info-content">
+              <p>
+                <strong>What does "estimated" mean?</strong> Some energy data values in this table have been estimated using a statistical technique called imputation. These values are marked with an asterisk (<span class="imputed-indicator">*</span>).
+              </p>
+              <p>
+                <strong>Why estimate values?</strong> Buildings sometimes have missing or incomplete energy data for certain years. Rather than leaving gaps, we estimate these values to provide a more complete picture of the building's energy performance over time.
+              </p>
+              <p>
+                <strong>How are values estimated?</strong> We use data from similar buildings (similar size, type, and location) to calculate estimated values. Each estimated value is based on a weighted average of actual reported values from neighboring buildings.
+              </p>
+              <p>
+                <strong>How accurate are estimates?</strong> Estimated values provide a reasonable approximation based on similar buildings, but they are not as accurate as actual reported data. Hover over any asterisk to see which buildings contributed to the estimate.
+              </p>
+            </div>
+          </details>
+
           <HistoricalBuildingDataTable :historic-benchmarks="historicData" />
         </div>
       </details>
@@ -800,6 +818,15 @@ export default class BuildingDetails extends Vue {
 
   /** All benchmarks (reported and not) for this building */
   historicData!: Array<IHistoricData>;
+
+  /**
+   * Check if any historical data has imputed values
+   */
+  get hasImputedData(): boolean {
+    return this.historicData?.some(
+      (benchmark) => benchmark.ImputedFields && benchmark.ImputedFields !== ''
+    ) || false;
+  }
 
   /** The data we are currently rendering in the historic data graph */
   currGraphData?: Array<IGraphPoint> = [];
@@ -1507,6 +1534,57 @@ export default class BuildingDetails extends Vue {
 
       h2 {
         font-size: 2rem;
+      }
+    }
+  }
+
+  // Imputation info callout
+  .imputation-info {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(255, 107, 107, 0.05);
+    border-left: 4px solid #ff6b6b;
+    border-radius: $brd-rad-small;
+
+    summary {
+      font-weight: 600;
+      cursor: pointer;
+      color: $off-black;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      user-select: none;
+
+      &:hover {
+        color: #ff6b6b;
+      }
+    }
+
+    .info-content {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 107, 107, 0.2);
+
+      p {
+        margin: 0.75rem 0;
+        line-height: 1.5;
+        font-size: 0.9375rem;
+
+        &:first-child {
+          margin-top: 0;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        strong {
+          color: $off-black;
+        }
+      }
+
+      .imputed-indicator {
+        color: #ff6b6b;
+        font-weight: bold;
       }
     }
   }
