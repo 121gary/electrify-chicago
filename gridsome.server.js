@@ -221,6 +221,19 @@ function loadHistoricBenchmarkDat(actions) {
       benchmark[col] = parseFloat(benchmark[col]);
     });
 
+    // Neighbor contribution fields are JSON strings, keep them as strings
+    const neighborStringCols = [
+      'NeighborsElectricityUse',
+      'NeighborsNaturalGasUse',
+      'NeighborsTotalGHGEmissions',
+    ];
+
+    neighborStringCols.forEach((col) => {
+      if (!benchmark[col]) {
+        benchmark[col] = '';
+      }
+    });
+
     benchmark.DataYear = parseInt(benchmark.DataYear);
 
     // Ensure ImputedFields is treated as a string (not parsed)

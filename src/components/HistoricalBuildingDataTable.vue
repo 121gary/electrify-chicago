@@ -104,7 +104,7 @@
             {{ benchmark.GHGIntensity }}
             <span
               v-if="isFieldImputed(benchmark, 'GHGIntensity')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'GHGIntensity')"
               class="imputed-indicator"
             >
               *
@@ -114,7 +114,7 @@
             {{ benchmark.TotalGHGEmissions | optionalFloat }}
             <span
               v-if="isFieldImputed(benchmark, 'TotalGHGEmissions')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'TotalGHGEmissions')"
               class="imputed-indicator"
             >
               *
@@ -156,7 +156,7 @@
             {{ benchmark.ElectricityUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'ElectricityUse')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'ElectricityUse')"
               class="imputed-indicator"
             >
               *
@@ -166,7 +166,7 @@
             {{ benchmark.NaturalGasUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'NaturalGasUse')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'NaturalGasUse')"
               class="imputed-indicator"
             >
               *
@@ -176,7 +176,7 @@
             {{ benchmark.DistrictSteamUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictSteamUse')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'DistrictSteamUse')"
               class="imputed-indicator"
             >
               *
@@ -186,7 +186,7 @@
             {{ benchmark.DistrictChilledWaterUse | optionalInt }}
             <span
               v-if="isFieldImputed(benchmark, 'DistrictChilledWaterUse')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'DistrictChilledWaterUse')"
               class="imputed-indicator"
             >
               *
@@ -197,7 +197,7 @@
             {{ benchmark.SourceEUI }}
             <span
               v-if="isFieldImputed(benchmark, 'SourceEUI')"
-              v-tooltip="'This value was estimated using imputation'"
+              v-tooltip.html="getImputedTooltip(benchmark, 'SourceEUI')"
               class="imputed-indicator"
             >
               *
@@ -275,6 +275,64 @@ export default class HistoricalBuildingTable extends Vue {
   /** Expose calculateEnergyBreakdown to template */
   getBreakdown(benchmark: IHistoricData): Array<IPieSlice> {
     return calculateEnergyBreakdown(benchmark).energyBreakdown;
+  }
+
+  /**
+   * Generate tooltip content for imputed fields, including neighbor contribution data
+   */
+  getImputedTooltip(benchmark: IHistoricData, fieldName: string): string {
+    let tooltip = '<p class="imputed-tooltip-title">This value was estimated using imputation</p>';
+
+    // Map field names to their neighbor contribution fields
+    const neighborFieldMap: { [key: string]: string } = {
+      'ElectricityUse': 'NeighborsElectricityUse',
+      'NaturalGasUse': 'NeighborsNaturalGasUse',
+      'TotalGHGEmissions': 'NeighborsTotalGHGEmissions',
+    };
+
+    const neighborField = neighborFieldMap[fieldName];
+
+    if (neighborField && benchmark[neighborField as keyof IHistoricData]) {
+      const neighborDataStr = benchmark[neighborField as keyof IHistoricData] as string;
+
+      if (neighborDataStr && neighborDataStr.trim()) {
+        try {
+          // Parse the JSON array of neighbor contributions
+          const neighbors = JSON.parse(neighborDataStr);
+
+          if (Array.isArray(neighbors) && neighbors.length > 0) {
+            tooltip += '<div class="imputed-tooltip-details">';
+            tooltip += '<p><strong>Neighbor Buildings Used:</strong></p>';
+            tooltip += '<ul class="neighbor-list">';
+
+            // Sort by weight descending
+            neighbors.sort((a: any, b: any) => (b.weight || 0) - (a.weight || 0));
+
+            // Show top 5 neighbors
+            const topNeighbors = neighbors.slice(0, 5);
+            topNeighbors.forEach((neighbor: any) => {
+              const weight = neighbor.weight || 0;
+              const percentage = Math.round(weight * 100);
+              const buildingName = neighbor.building_name || `Building ${neighbor.building_id || 'Unknown'}`;
+
+              tooltip += `<li>${buildingName}: ${percentage}% contribution</li>`;
+            });
+
+            if (neighbors.length > 5) {
+              tooltip += `<li class="more-neighbors">...and ${neighbors.length - 5} more</li>`;
+            }
+
+            tooltip += '</ul>';
+            tooltip += '</div>';
+          }
+        } catch (e) {
+          // If JSON parsing fails, just show basic message
+          console.error('Failed to parse neighbor data:', e);
+        }
+      }
+    }
+
+    return tooltip;
   }
 
   getRenderedColumns(): Array<string> {
@@ -440,6 +498,47 @@ table.historical-data {
     cursor: help;
     margin-left: 2px;
     font-size: 0.9rem;
+  }
+}
+
+// Tooltip styling for imputed value details
+.tooltip {
+  .imputed-tooltip-title {
+    margin: 0 0 0.5rem 0;
+    font-weight: bold;
+  }
+
+  .imputed-tooltip-details {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+
+    p {
+      margin: 0.25rem 0;
+      font-size: 0.875rem;
+    }
+
+    strong {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .neighbor-list {
+      list-style: none;
+      padding-left: 0.5rem;
+      margin: 0.25rem 0;
+      font-size: 0.8125rem;
+
+      li {
+        margin: 0.125rem 0;
+        padding-left: 0;
+
+        &.more-neighbors {
+          font-style: italic;
+          opacity: 0.8;
+          margin-top: 0.25rem;
+        }
+      }
+    }
   }
 }
 </style>
