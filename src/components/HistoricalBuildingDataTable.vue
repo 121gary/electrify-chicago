@@ -360,7 +360,15 @@ export default class HistoricalBuildingTable extends Vue {
       'TotalGHGEmissions': 'NeighborsTotalGHGEmissions',
     };
 
+    // Map field names to their corresponding data fields in neighbor objects
+    const neighborValueMap: { [key: string]: { field: string, label: string, unit: string } } = {
+      'ElectricityUse': { field: 'electricity_use', label: 'Electricity Use', unit: 'kBtu' },
+      'NaturalGasUse': { field: 'natural_gas_use', label: 'Natural Gas Use', unit: 'kBtu' },
+      'TotalGHGEmissions': { field: 'total_ghg_emissions', label: 'GHG Emissions', unit: 'Metric Tons CO2e' },
+    };
+
     const neighborField = neighborFieldMap[fieldName];
+    const valueInfo = neighborValueMap[fieldName];
 
     if (neighborField && benchmark[neighborField as keyof IHistoricData]) {
       const neighborDataStr = benchmark[neighborField as keyof IHistoricData] as string;
@@ -395,10 +403,18 @@ export default class HistoricalBuildingTable extends Vue {
                 ? Math.round(neighbor.square_footage).toLocaleString() + ' sqft'
                 : 'Size not available';
 
+              // Get the relevant value for this field if available
+              let metricValue = '';
+              if (valueInfo && neighbor[valueInfo.field] !== null && neighbor[valueInfo.field] !== undefined) {
+                const value = Math.round(neighbor[valueInfo.field]).toLocaleString();
+                metricValue = `${valueInfo.label}: ${value} ${valueInfo.unit}`;
+              }
+
               tooltip += `<li class="neighbor-item">`;
               tooltip += `<div class="neighbor-name">${buildingName} (${percentage}% contribution)</div>`;
               tooltip += `<div class="neighbor-details">${address}</div>`;
               tooltip += `<div class="neighbor-details">${propertyType} • ${sqft}</div>`;
+              tooltip += `<div class="neighbor-details">${metricValue}</div>`;
               tooltip += `</li>`;
             });
 
@@ -410,8 +426,7 @@ export default class HistoricalBuildingTable extends Vue {
             tooltip += '</div>';
           }
         } catch (e) {
-          // If JSON parsing fails, just show basic message
-          console.error('Failed to parse neighbor data:', e);
+          // Silent fail - tooltip will just show basic imputation message
         }
       }
     }
@@ -647,6 +662,14 @@ table.historical-data {
           font-size: 0.75rem;
           opacity: 0.9;
           margin-top: 0.125rem;
+
+          &:last-child {
+            margin-top: 0.25rem;
+            padding-top: 0.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-weight: 500;
+            opacity: 1;
+          }
         }
       }
 
