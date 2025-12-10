@@ -31,6 +31,24 @@ export default class About extends Vue {
       <ul class="blogs-list">
         <li>
           <h2>
+            <g-link to="/blog/making-sense-of-missing-data">
+              Making Sense Of Missing Data
+            </g-link>
+          </h2>
+          <p class="publish-time">
+            Published <time datetime="2025-12-09">Dec. 9th, 2025</time>
+          </p>
+
+          <p>
+            Learn how KNN imputation helps fill in missing building energy data
+            to provide more complete analysis of Chicago buildings. We explore
+            the motivation, process, and results of using this statistical
+            technique to make the most of incomplete benchmarking data.
+          </p>
+        </li>
+
+        <li>
+          <h2>
             <g-link to="/blog/how-we-grade-buildings">
               How We Grade Buildings, And Why
             </g-link>
