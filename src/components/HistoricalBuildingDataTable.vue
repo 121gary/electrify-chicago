@@ -78,30 +78,74 @@
 
           <!-- Only show any grades if the average exists for that year, otherwise it's
             incomplete data-->
-          <td class="text-center">
+          <td class="text-center grade-cell">
             <LetterGrade
               v-if="benchmark.AvgPercentileLetterGrade"
               class="-overall"
+              :class="{ '-imputed': benchmark.ImputedFields && benchmark.ImputedFields !== '' }"
               :grade="benchmark.AvgPercentileLetterGrade"
             />
+            <span
+              v-if="benchmark.ImputedFields && benchmark.ImputedFields !== '' && benchmark.AvgPercentileLetterGrade"
+              v-tooltip.html.top="{
+                content: getGradeDisclaimerTooltip(),
+                delay: { show: 200, hide: 0 },
+              }"
+              class="grade-disclaimer"
+            >
+              *
+            </span>
           </td>
-          <td class="text-center">
+          <td class="text-center grade-cell">
             <LetterGrade
               v-if="benchmark.AvgPercentileLetterGrade"
+              :class="{ '-imputed': benchmark.ImputedFields && benchmark.ImputedFields !== '' }"
               :grade="benchmark.GHGIntensityLetterGrade"
             />
+            <span
+              v-if="benchmark.ImputedFields && benchmark.ImputedFields !== '' && benchmark.AvgPercentileLetterGrade"
+              v-tooltip.html.top="{
+                content: getGradeDisclaimerTooltip(),
+                delay: { show: 200, hide: 0 },
+              }"
+              class="grade-disclaimer"
+            >
+              *
+            </span>
           </td>
-          <td class="text-center">
+          <td class="text-center grade-cell">
             <LetterGrade
               v-if="benchmark.AvgPercentileLetterGrade"
+              :class="{ '-imputed': benchmark.ImputedFields && benchmark.ImputedFields !== '' }"
               :grade="benchmark.EnergyMixLetterGrade"
             />
+            <span
+              v-if="benchmark.ImputedFields && benchmark.ImputedFields !== '' && benchmark.AvgPercentileLetterGrade"
+              v-tooltip.html.top="{
+                content: getEnergyMixGradeDisclaimerTooltip(),
+                delay: { show: 200, hide: 0 },
+              }"
+              class="grade-disclaimer"
+            >
+              *
+            </span>
           </td>
-          <td class="text-center">
+          <td class="text-center grade-cell">
             <LetterGrade
               v-if="benchmark.AvgPercentileLetterGrade"
+              :class="{ '-imputed': benchmark.ImputedFields && benchmark.ImputedFields !== '' }"
               :grade="benchmark.SubmittedRecordsLetterGrade"
             />
+            <span
+              v-if="benchmark.ImputedFields && benchmark.ImputedFields !== '' && benchmark.AvgPercentileLetterGrade"
+              v-tooltip.html.top="{
+                content: getGradeDisclaimerTooltip(),
+                delay: { show: 200, hide: 0 },
+              }"
+              class="grade-disclaimer"
+            >
+              *
+            </span>
           </td>
 
           <td :class="{ 'has-imputed-value': isFieldImputed(benchmark, 'GHGIntensity') }">
@@ -109,7 +153,7 @@
             <span
               v-if="isFieldImputed(benchmark, 'GHGIntensity')"
               v-tooltip.html.left="{
-                content: getImputedTooltip(benchmark, 'GHGIntensity'),
+                content: getDerivedFieldTooltip('GHGIntensity'),
                 delay: { show: 200, hide: 0 },
                 offset: 16,
                 popperOptions: {
@@ -289,8 +333,19 @@
               *
             </span>
           </td>
-          <td v-if="renderedColumns.includes('GrossFloorArea')">
+          <td v-if="renderedColumns.includes('GrossFloorArea')" :class="{ 'has-backfilled-value': isFieldBackfilled(benchmark, 'GrossFloorArea') }">
             {{ benchmark.GrossFloorArea | optionalInt }}
+            <span
+              v-if="isFieldBackfilled(benchmark, 'GrossFloorArea')"
+              v-tooltip.html.left="{
+                content: getBackfilledTooltip('GrossFloorArea'),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+              }"
+              class="backfilled-indicator"
+            >
+              †
+            </span>
           </td>
 
           <td v-if="renderedColumns.includes('ChicagoEnergyRating')">
@@ -304,8 +359,11 @@
     </table>
 
     <p v-if="hasImputedData" class="imputed-legend">
-      <span class="imputed-indicator">*</span> = Estimated value based on similar buildings (hover for details)
+      <span class="imputed-indicator">*</span> = Estimated value or grade based on similar buildings (hover for details)
       <span class="imputed-count">{{ imputedYearsCount }} of {{ historicBenchmarks.length }} years contain estimated data</span>
+    </p>
+    <p v-if="hasBackfilledData" class="backfilled-legend">
+      <span class="backfilled-indicator">†</span> = Value from most recent prior year (building did not report this year)
     </p>
   </div>
 </template>
@@ -317,6 +375,7 @@ import {
   calculateEnergyBreakdown,
   IHistoricData,
   isFieldImputed,
+  isFieldBackfilled,
 } from '../common-functions.vue';
 import PieChart, { IPieSlice } from './graphs/PieChart.vue';
 import LetterGrade from './LetterGrade.vue';
@@ -363,9 +422,56 @@ export default class HistoricalBuildingTable extends Vue {
   /** Expose isFieldImputed to template */
   isFieldImputed = isFieldImputed;
 
+  /** Expose isFieldBackfilled to template */
+  isFieldBackfilled = isFieldBackfilled;
+
   /** Expose calculateEnergyBreakdown to template */
   getBreakdown(benchmark: IHistoricData): Array<IPieSlice> {
     return calculateEnergyBreakdown(benchmark).energyBreakdown;
+  }
+
+  /**
+   * Generate tooltip for grade disclaimer on imputed rows
+   */
+  getGradeDisclaimerTooltip(): string {
+    return '<p class="grade-disclaimer-tooltip"><strong>Grade based on estimated data</strong></p>' +
+           '<p class="grade-disclaimer-text">This year\'s grades are calculated using imputed (estimated) values. ' +
+           'Hover over data values marked with * to see which buildings were used for the estimates.</p>';
+  }
+
+  /**
+   * Generate tooltip for Energy Mix Sub-Grade disclaimer on imputed rows
+   */
+  getEnergyMixGradeDisclaimerTooltip(): string {
+    return '<p class="grade-disclaimer-tooltip"><strong>Grade based on estimated data</strong></p>' +
+           '<p class="grade-disclaimer-text">This year\'s grades are calculated using imputed (estimated) values. ' +
+           'Hover over data values marked with * to see which buildings were used for the estimates.</p>' +
+           '<p class="grade-disclaimer-text" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255, 255, 255, 0.3);">' +
+           '<strong>Note:</strong> District steam and chilled water use are assumed to be 0 for this year, ' +
+           'as these infrastructure-dependent values cannot be reliably estimated from neighboring buildings.</p>';
+  }
+
+  /**
+   * Generate tooltip for derived fields (calculated from imputed values)
+   */
+  getDerivedFieldTooltip(fieldName: string): string {
+    const derivedFieldExplanations: { [key: string]: string } = {
+      'GHGIntensity': 'This value was calculated from the estimated Total GHG Emissions divided by building square footage.',
+    };
+
+    const explanation = derivedFieldExplanations[fieldName] || 'This value was calculated from estimated data.';
+
+    return '<p class="imputed-tooltip-title">Calculated from estimated data</p>' +
+           `<p class="grade-disclaimer-text">${explanation}</p>`;
+  }
+
+  /**
+   * Generate tooltip for backfilled fields (from prior years)
+   */
+  getBackfilledTooltip(fieldName: string): string {
+    return '<p class="imputed-tooltip-title">Value from prior year</p>' +
+           '<p class="grade-disclaimer-text">This building did not report floor area this year. ' +
+           'The most recently reported floor area was used instead.</p>';
   }
 
   /**
@@ -525,6 +631,15 @@ export default class HistoricalBuildingTable extends Vue {
     ).length;
   }
 
+  /**
+   * Check if any benchmark has backfilled data
+   */
+  get hasBackfilledData(): boolean {
+    return this.historicBenchmarks.some(
+      (benchmark) => benchmark.BackfilledFields && benchmark.BackfilledFields !== ''
+    );
+  }
+
   created(): void {
     this.renderedColumns = this.getRenderedColumns();
   }
@@ -644,6 +759,25 @@ table.historical-data {
     &:not(.-overall) {
       vertical-align: bottom;
     }
+
+    // Fade grades that are based on imputed data
+    &.-imputed {
+      opacity: 0.7;
+    }
+  }
+
+  .grade-cell {
+    position: relative;
+  }
+
+  .grade-disclaimer {
+    color: #ff6b6b;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 2px;
+    font-size: 0.875rem;
+    vertical-align: super;
+    line-height: 0;
   }
 
   .imputed-indicator {
@@ -654,6 +788,19 @@ table.historical-data {
     font-size: 1rem;
     display: inline-block;
     animation: pulse-subtle 2s ease-in-out infinite;
+  }
+
+  .backfilled-indicator {
+    color: #6b9bff;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 2px;
+    font-size: 1rem;
+    display: inline-block;
+  }
+
+  td.has-backfilled-value {
+    background-color: rgba(107, 155, 255, 0.08);
   }
 
   @keyframes pulse-subtle {
@@ -685,6 +832,18 @@ table.historical-data {
   }
 }
 
+.backfilled-legend {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: #6b9bff;
+  font-style: italic;
+
+  .backfilled-indicator {
+    cursor: default;
+  }
+}
+
 // Tooltip styling for imputed value details
 // Use :deep to target v-tooltip generated elements
 :deep(.tooltip) {
@@ -700,6 +859,18 @@ table.historical-data {
   .imputed-tooltip-title {
     margin: 0 0 0.5rem 0;
     font-weight: bold;
+  }
+
+  .grade-disclaimer-tooltip {
+    margin: 0 0 0.5rem 0;
+    font-weight: bold;
+    font-size: 0.9375rem;
+  }
+
+  .grade-disclaimer-text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
   }
 
   .imputed-tooltip-details {
