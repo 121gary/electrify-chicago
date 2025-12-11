@@ -31,7 +31,6 @@ def run():
     historical_path = Path("src/data/dist/benchmarking-all-years.csv")
     imputed_path = Path("src/data/source/ChicagoEnergyBenchmarking_Imputed.csv")
     original_path = Path("src/data/source/ChicagoEnergyBenchmarking.csv")
-    buildings_path = Path("src/data/dist/building-benchmarks.csv")
     output_path = historical_path
 
     print("Loading historical benchmarking data...")
@@ -40,11 +39,8 @@ def run():
     print("Loading imputed data...")
     df_imputed = pd.read_csv(imputed_path)
 
-    print("Loading original data...")
+    print("Loading original data for neighbor lookups...")
     df_original = pd.read_csv(original_path)
-
-    print("Loading building data for neighbor lookups...")
-    df_buildings = pd.read_csv(buildings_path)
 
     building_details_by_year = {}
     building_names_fallback = {}
@@ -96,7 +92,6 @@ def run():
     print(f"Historical data: {len(df_historical)} rows")
     print(f"Imputed data: {len(df_imputed)} rows")
     print(f"Original data: {len(df_original)} rows")
-    print(f"Buildings data: {len(df_buildings)} rows")
 
     column_mapping = {
         "ElectricityUse": {
@@ -133,13 +128,16 @@ def run():
         },
     }
 
+    # Map output column names to the single neighbors column in the imputed CSV
+    # All three metrics now use the same neighbors column
     neighbor_column_mapping = {
-        "NeighborsElectricityUse": "neighbors_electricity_use_kbtu",
-        "NeighborsNaturalGasUse": "neighbors_natural_gas_use_kbtu",
-        "NeighborsTotalGHGEmissions": "neighbors_total_ghg_emissions_metric_tons_co2e",
+        "NeighborsElectricityUse": "neighbors",
+        "NeighborsNaturalGasUse": "neighbors",
+        "NeighborsTotalGHGEmissions": "neighbors",
     }
 
     df_historical["ImputedFields"] = ""
+    df_historical["ImputationConfidence"] = ""
 
     for hist_col in neighbor_column_mapping.keys():
         df_historical[hist_col] = ""
@@ -186,6 +184,11 @@ def run():
         if imputed_fields:
             df_historical.at[idx, 'ImputedFields'] = ','.join(imputed_fields)
 
+            # Copy imputation confidence score if available
+            confidence_value = imp_row.get('imputation_confidence')
+            if pd.notna(confidence_value):
+                df_historical.at[idx, 'ImputationConfidence'] = confidence_value
+
             for hist_col, imp_col in neighbor_column_mapping.items():
                 neighbor_data = imp_row.get(imp_col)
                 if pd.notna(neighbor_data) and neighbor_data:
@@ -208,7 +211,9 @@ def run():
 
                                 neighbor['building_id'] = actual_building_id
 
-                                lookup_key = f"{actual_building_id}_{current_year}"
+                                # Use the neighbor's year if available, otherwise use current year
+                                neighbor_year = str(neighbor.get('year', current_year))
+                                lookup_key = f"{actual_building_id}_{neighbor_year}"
                                 details = building_details_by_year.get(lookup_key, {})
 
                                 building_name = clean_value_for_json(details.get('name'))

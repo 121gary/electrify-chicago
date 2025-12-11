@@ -114,7 +114,11 @@ export interface IHistoricData {
   // Comma-separated list of imputed field names
   ImputedFields?: string;
 
+  // Imputation confidence score (0-100, higher is better)
+  ImputationConfidence?: number;
+
   // Neighbor contribution fields for imputed values (JSON strings with building IDs and weights)
+  // Note: All three metrics now use the same neighbors data
   NeighborsElectricityUse?: string;
   NeighborsNaturalGasUse?: string;
   NeighborsTotalGHGEmissions?: string;

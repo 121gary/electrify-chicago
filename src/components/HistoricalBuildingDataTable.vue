@@ -383,9 +383,9 @@ export default class HistoricalBuildingTable extends Vue {
 
     // Map field names to their corresponding data fields in neighbor objects
     const neighborValueMap: { [key: string]: { field: string, label: string, unit: string } } = {
-      'ElectricityUse': { field: 'electricity_use', label: 'Electricity Use', unit: 'kBtu' },
-      'NaturalGasUse': { field: 'natural_gas_use', label: 'Natural Gas Use', unit: 'kBtu' },
-      'TotalGHGEmissions': { field: 'total_ghg_emissions', label: 'GHG Emissions', unit: 'Metric Tons CO2e' },
+      'ElectricityUse': { field: 'electricity_use_kbtu', label: 'Electricity Use', unit: 'kBtu' },
+      'NaturalGasUse': { field: 'natural_gas_use_kbtu', label: 'Natural Gas Use', unit: 'kBtu' },
+      'TotalGHGEmissions': { field: 'total_ghg_emissions_metric_tons_co2e', label: 'GHG Emissions', unit: 'Metric Tons CO2e' },
     };
 
     const neighborField = neighborFieldMap[fieldName];
@@ -431,8 +431,14 @@ export default class HistoricalBuildingTable extends Vue {
                 metricValue = `${valueInfo.label}: ${value} ${valueInfo.unit}`;
               }
 
+              // Get year if available
+              let yearInfo = '';
+              if (neighbor.year) {
+                yearInfo = ` (${neighbor.year})`;
+              }
+
               tooltip += `<li class="neighbor-item">`;
-              tooltip += `<div class="neighbor-name">${buildingName} (${percentage}% contribution)</div>`;
+              tooltip += `<div class="neighbor-name">${buildingName}${yearInfo} (${percentage}% contribution)</div>`;
               tooltip += `<div class="neighbor-details">${address}</div>`;
               tooltip += `<div class="neighbor-details">${propertyType} • ${sqft}</div>`;
               tooltip += `<div class="neighbor-details">${metricValue}</div>`;
@@ -615,16 +621,18 @@ table.historical-data {
     }
   }
 
-  tbody tr:nth-of-type(even) {
+  tbody tr:nth-of-type(even):not(.has-imputed-data) {
     background-color: $grey-light;
   }
 
   tbody tr.has-imputed-data {
     border-left: 3px solid #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.08);
   }
 
+  // Remove individual cell highlighting - entire row is highlighted instead
   td.has-imputed-value {
-    background-color: rgba(255, 107, 107, 0.08);
+    // No additional styling needed - row handles it
   }
 
   .letter-grade {
