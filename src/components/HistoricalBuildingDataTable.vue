@@ -502,8 +502,13 @@ export default class HistoricalBuildingTable extends Vue {
             tooltip += '<p><strong>Neighbor Buildings Used:</strong></p>';
             tooltip += '<ul class="neighbor-list">';
 
-            // Sort by weight descending
-            neighbors.sort((a: any, b: any) => (b.weight || 0) - (a.weight || 0));
+            // Sort by weight descending, then by most recent year as tiebreaker
+            neighbors.sort((a: any, b: any) => {
+              const weightDiff = (b.weight || 0) - (a.weight || 0);
+              if (weightDiff !== 0) return weightDiff;
+              // Tie-breaker: most recent year first
+              return (b.year || 0) - (a.year || 0);
+            });
 
             // Show top 5 neighbors
             const topNeighbors = neighbors.slice(0, 5);
