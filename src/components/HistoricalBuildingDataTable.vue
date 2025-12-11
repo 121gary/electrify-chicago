@@ -333,19 +333,8 @@
               *
             </span>
           </td>
-          <td v-if="renderedColumns.includes('GrossFloorArea')" :class="{ 'has-backfilled-value': isFieldBackfilled(benchmark, 'GrossFloorArea') }">
+          <td v-if="renderedColumns.includes('GrossFloorArea')">
             {{ benchmark.GrossFloorArea | optionalInt }}
-            <span
-              v-if="isFieldBackfilled(benchmark, 'GrossFloorArea')"
-              v-tooltip.html.left="{
-                content: getBackfilledTooltip('GrossFloorArea'),
-                delay: { show: 200, hide: 0 },
-                offset: 16,
-              }"
-              class="backfilled-indicator"
-            >
-              †
-            </span>
           </td>
 
           <td v-if="renderedColumns.includes('ChicagoEnergyRating')">
@@ -362,9 +351,6 @@
       <span class="imputed-indicator">*</span> = Estimated value or grade based on similar buildings (hover for details)
       <span class="imputed-count">{{ imputedYearsCount }} of {{ historicBenchmarks.length }} years contain estimated data</span>
     </p>
-    <p v-if="hasBackfilledData" class="backfilled-legend">
-      <span class="backfilled-indicator">†</span> = Value from most recent prior year (building did not report this year)
-    </p>
   </div>
 </template>
 
@@ -375,7 +361,6 @@ import {
   calculateEnergyBreakdown,
   IHistoricData,
   isFieldImputed,
-  isFieldBackfilled,
 } from '../common-functions.vue';
 import PieChart, { IPieSlice } from './graphs/PieChart.vue';
 import LetterGrade from './LetterGrade.vue';
@@ -422,9 +407,6 @@ export default class HistoricalBuildingTable extends Vue {
   /** Expose isFieldImputed to template */
   isFieldImputed = isFieldImputed;
 
-  /** Expose isFieldBackfilled to template */
-  isFieldBackfilled = isFieldBackfilled;
-
   /** Expose calculateEnergyBreakdown to template */
   getBreakdown(benchmark: IHistoricData): Array<IPieSlice> {
     return calculateEnergyBreakdown(benchmark).energyBreakdown;
@@ -463,15 +445,6 @@ export default class HistoricalBuildingTable extends Vue {
 
     return '<p class="imputed-tooltip-title">Calculated from estimated data</p>' +
            `<p class="grade-disclaimer-text">${explanation}</p>`;
-  }
-
-  /**
-   * Generate tooltip for backfilled fields (from prior years)
-   */
-  getBackfilledTooltip(fieldName: string): string {
-    return '<p class="imputed-tooltip-title">Value from prior year</p>' +
-           '<p class="grade-disclaimer-text">This building did not report floor area this year. ' +
-           'The most recently reported floor area was used instead.</p>';
   }
 
   /**
@@ -631,15 +604,6 @@ export default class HistoricalBuildingTable extends Vue {
     ).length;
   }
 
-  /**
-   * Check if any benchmark has backfilled data
-   */
-  get hasBackfilledData(): boolean {
-    return this.historicBenchmarks.some(
-      (benchmark) => benchmark.BackfilledFields && benchmark.BackfilledFields !== ''
-    );
-  }
-
   created(): void {
     this.renderedColumns = this.getRenderedColumns();
   }
@@ -790,19 +754,6 @@ table.historical-data {
     animation: pulse-subtle 2s ease-in-out infinite;
   }
 
-  .backfilled-indicator {
-    color: #6b9bff;
-    font-weight: bold;
-    cursor: help;
-    margin-left: 2px;
-    font-size: 1rem;
-    display: inline-block;
-  }
-
-  td.has-backfilled-value {
-    background-color: rgba(107, 155, 255, 0.08);
-  }
-
   @keyframes pulse-subtle {
     0%, 100% {
       opacity: 1;
@@ -829,18 +780,6 @@ table.historical-data {
     padding-left: 1rem;
     border-left: 1px solid rgba(255, 107, 107, 0.4);
     font-weight: 500;
-  }
-}
-
-.backfilled-legend {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-  font-size: 0.875rem;
-  color: #6b9bff;
-  font-style: italic;
-
-  .backfilled-indicator {
-    cursor: default;
   }
 }
 

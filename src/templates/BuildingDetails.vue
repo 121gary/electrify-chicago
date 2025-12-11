@@ -77,7 +77,6 @@ query ($id: ID!, $ID: String) {
           DistrictChilledWaterUse
           ImputedFields
           ImputationConfidence
-          BackfilledFields
           # Neighbor contribution fields
           NeighborsElectricityUse
           NeighborsNaturalGasUse

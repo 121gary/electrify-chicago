@@ -117,9 +117,6 @@ export interface IHistoricData {
   // Imputation confidence score (0-100, higher is better)
   ImputationConfidence?: number;
 
-  // Comma-separated list of backfilled field names (from prior years)
-  BackfilledFields?: string;
-
   // Neighbor contribution fields for imputed values (JSON strings with building IDs and weights)
   // Note: All three metrics now use the same neighbors data
   NeighborsElectricityUse?: string;
@@ -768,19 +765,6 @@ export function isFieldImputed(
   return record.ImputedFields.split(',').includes(fieldName);
 }
 
-/**
- * Check if a specific field was backfilled from a prior year
- * @param record - The benchmark record from GraphQL
- * @param fieldName - The field name to check (e.g., 'GrossFloorArea')
- * @returns true if the field was backfilled
- */
-export function isFieldBackfilled(
-  record: IHistoricData,
-  fieldName: string,
-): boolean {
-  if (!record.BackfilledFields) return false;
-  return record.BackfilledFields.split(',').includes(fieldName);
-}
 
 /**
  * Get all imputed fields for a benchmark record

@@ -138,7 +138,6 @@ def run():
 
     df_historical["ImputedFields"] = ""
     df_historical["ImputationConfidence"] = ""
-    df_historical["BackfilledFields"] = ""  # Track fields backfilled from prior years
 
     for hist_col in neighbor_column_mapping.keys():
         df_historical[hist_col] = ""
@@ -194,25 +193,6 @@ def run():
             # GHGIntensity = TotalGHGEmissions / GrossFloorArea (in kg CO2e per sqft)
             total_ghg = df_historical.at[idx, 'TotalGHGEmissions']
             gross_floor_area = imp_row.get('gross_floor_area_buildings_sq_ft')
-
-            # If floor area is missing, backfill from most recent reported value for this building
-            if pd.isna(gross_floor_area) or gross_floor_area == 0:
-                building_id = hist_row['ID']
-                current_year = hist_row['DataYear']
-                # Get all historical rows for this building with valid floor area, sorted by year descending
-                building_history = df_historical[
-                    (df_historical['ID'] == building_id) &
-                    (df_historical['DataYear'] < current_year) &
-                    (df_historical['GrossFloorArea'].notna()) &
-                    (df_historical['GrossFloorArea'] > 0)
-                ].sort_values('DataYear', ascending=False)
-
-                if len(building_history) > 0:
-                    gross_floor_area = building_history.iloc[0]['GrossFloorArea']
-                    # Update the historical data with backfilled floor area
-                    df_historical.at[idx, 'GrossFloorArea'] = gross_floor_area
-                    df_historical.at[idx, 'BackfilledFields'] = 'GrossFloorArea'
-                    print(f"  Backfilled floor area for building {building_id} year {current_year}: {gross_floor_area} sqft")
 
             if pd.notna(total_ghg) and pd.notna(gross_floor_area) and gross_floor_area > 0:
                 # Convert metric tons to kg (× 1000), divide by sqft
