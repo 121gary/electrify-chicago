@@ -126,6 +126,10 @@ def run():
             "imputed": "district_chilled_water_use_kbtu",
             "original": "District Chilled Water Use (kBtu)"
         },
+        "GrossFloorArea": {
+            "imputed": "gross_floor_area_buildings_sq_ft",
+            "original": "Gross Floor Area - Buildings (sq ft)"
+        },
     }
 
     # Map output column names to the single neighbors column in the imputed CSV

@@ -335,6 +335,17 @@
           </td>
           <td v-if="renderedColumns.includes('GrossFloorArea')">
             {{ benchmark.GrossFloorArea | optionalInt }}
+            <span
+              v-if="isFieldImputed(benchmark, 'GrossFloorArea')"
+              v-tooltip.html.left="{
+                content: getGrossFloorAreaTooltip(),
+                delay: { show: 200, hide: 0 },
+                offset: 16,
+              }"
+              class="imputed-indicator"
+            >
+              *
+            </span>
           </td>
 
           <td v-if="renderedColumns.includes('ChicagoEnergyRating')">
@@ -445,6 +456,15 @@ export default class HistoricalBuildingTable extends Vue {
 
     return '<p class="imputed-tooltip-title">Calculated from estimated data</p>' +
            `<p class="grade-disclaimer-text">${explanation}</p>`;
+  }
+
+  /**
+   * Generate tooltip for imputed Gross Floor Area
+   */
+  getGrossFloorAreaTooltip(): string {
+    return '<p class="imputed-tooltip-title">Floor area from prior reporting</p>' +
+           '<p class="grade-disclaimer-text">This building did not report floor area this year. ' +
+           'The most recently reported floor area was used instead.</p>';
   }
 
   /**
