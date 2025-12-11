@@ -589,6 +589,8 @@ query ($id: ID!, $ID: String) {
 
           <h2>Full Historical Data Table for {{ propertyName }}</h2>
 
+          <HistoricalBuildingDataTable :historic-benchmarks="historicData" />
+
           <details class="imputation-info" v-if="hasImputedData">
             <summary>About Estimated Data Values</summary>
             <div class="info-content">
@@ -606,8 +608,6 @@ query ($id: ID!, $ID: String) {
               </p>
             </div>
           </details>
-
-          <HistoricalBuildingDataTable :historic-benchmarks="historicData" />
         </div>
       </details>
 
