@@ -471,7 +471,7 @@ export default class HistoricalBuildingTable extends Vue {
    * Generate tooltip content for imputed fields, including neighbor contribution data
    */
   getImputedTooltip(benchmark: IHistoricData, fieldName: string): string {
-    let tooltip = '<p class="imputed-tooltip-title">This value was estimated using imputation</p>';
+    let tooltip = '<p class="imputed-tooltip-title">This value was estimated with K-Nearest-Neighbor imputation, read more about it in the section "About Estimated Data Values"</p>';
 
     // Add confidence level if available
     if (benchmark.ImputationConfidence !== undefined && benchmark.ImputationConfidence !== null) {
@@ -489,6 +489,8 @@ export default class HistoricalBuildingTable extends Vue {
 
       tooltip += `<p class="imputation-confidence ${confidenceClass}">Confidence: <strong>${confidenceLabel}</strong></p>`;
     }
+
+    tooltip += '<p class="neighbor-buildings-label"><strong>Neighbor Buildings Used:</strong></p>';
 
     // Map field names to their neighbor contribution fields
     const neighborFieldMap: { [key: string]: string } = {
@@ -516,7 +518,6 @@ export default class HistoricalBuildingTable extends Vue {
 
           if (Array.isArray(neighbors) && neighbors.length > 0) {
             tooltip += '<div class="imputed-tooltip-details">';
-            tooltip += '<p><strong>Neighbor Buildings Used:</strong></p>';
             tooltip += '<ul class="neighbor-list">';
 
             // Sort by weight descending, then by most recent year as tiebreaker
@@ -843,7 +844,7 @@ table.historical-data {
   }
 
   .imputation-confidence {
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     font-size: 0.875rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
@@ -879,17 +880,19 @@ table.historical-data {
   }
 
   .imputed-tooltip-details {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
     border-top: 1px solid rgba(255, 255, 255, 0.3);
 
     p {
-      margin: 0.25rem 0;
+      margin: 0 0 0.5rem 0;
       font-size: 0.875rem;
+      display: block;
     }
 
     strong {
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255, 255, 255, 1);
+      font-weight: bold;
     }
 
     .neighbor-list {
