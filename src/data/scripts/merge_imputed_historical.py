@@ -84,10 +84,16 @@ def run():
         square_footage = row.get('Gross Floor Area - Buildings (sq ft)')
         if pd.notna(square_footage):
             if building_id not in building_sqft_fallback:
-                building_sqft_fallback[building_id] = square_footage
+                building_sqft_fallback[building_id] = {
+                    'square_footage': square_footage,
+                    'year': int(row['Data Year'])
+                }
             else:
-                if int(row['Data Year']) > building_names_fallback.get(building_id, {}).get('year', 0):
-                    building_sqft_fallback[building_id] = square_footage
+                if int(row['Data Year']) > building_sqft_fallback[building_id]['year']:
+                    building_sqft_fallback[building_id] = {
+                        'square_footage': square_footage,
+                        'year': int(row['Data Year'])
+                    }
 
     print(f"Historical data: {len(df_historical)} rows")
     print(f"Imputed data: {len(df_imputed)} rows")
@@ -224,7 +230,7 @@ def run():
                                         actual_building_id = str(df_imputed.iloc[row_idx]['id'])
                                     else:
                                         actual_building_id = str(neighbor_row_idx)
-                                except:
+                                except (ValueError, TypeError):
                                     actual_building_id = str(neighbor_row_idx)
 
                                 neighbor['building_id'] = actual_building_id
@@ -249,7 +255,7 @@ def run():
 
                                 square_footage = clean_value_for_json(details.get('square_footage'))
                                 if not square_footage and actual_building_id in building_sqft_fallback:
-                                    square_footage = clean_value_for_json(building_sqft_fallback[actual_building_id])
+                                    square_footage = clean_value_for_json(building_sqft_fallback[actual_building_id]['square_footage'])
                                 neighbor['square_footage'] = square_footage
                                 neighbor['year_built'] = clean_value_for_json(details.get('year_built'))
                                 neighbor['electricity_use'] = clean_value_for_json(details.get('electricity_use'))

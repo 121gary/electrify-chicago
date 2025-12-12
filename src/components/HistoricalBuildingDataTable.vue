@@ -415,6 +415,13 @@ export default class HistoricalBuildingTable extends Vue {
 
   renderedColumns: Array<string> = [];
 
+  /** Confidence level thresholds */
+  readonly CONFIDENCE_THRESHOLD_HIGH = 66;
+  readonly CONFIDENCE_THRESHOLD_MEDIUM = 33;
+
+  /** Maximum number of neighbors to display in tooltip */
+  readonly MAX_NEIGHBORS_DISPLAY = 5;
+
   /** Expose isFieldImputed to template */
   isFieldImputed = isFieldImputed;
 
@@ -479,10 +486,10 @@ export default class HistoricalBuildingTable extends Vue {
       let confidenceLabel = 'Low';
       let confidenceClass = 'confidence-low';
 
-      if (confidence > 66) {
+      if (confidence > this.CONFIDENCE_THRESHOLD_HIGH) {
         confidenceLabel = 'High';
         confidenceClass = 'confidence-high';
-      } else if (confidence > 33) {
+      } else if (confidence > this.CONFIDENCE_THRESHOLD_MEDIUM) {
         confidenceLabel = 'Medium';
         confidenceClass = 'confidence-medium';
       }
@@ -528,8 +535,8 @@ export default class HistoricalBuildingTable extends Vue {
               return (b.year || 0) - (a.year || 0);
             });
 
-            // Show top 5 neighbors
-            const topNeighbors = neighbors.slice(0, 5);
+            // Show top N neighbors
+            const topNeighbors = neighbors.slice(0, this.MAX_NEIGHBORS_DISPLAY);
             topNeighbors.forEach((neighbor: any) => {
               const weight = neighbor.weight || 0;
               const percentage = Math.round(weight * 100);
@@ -567,15 +574,18 @@ export default class HistoricalBuildingTable extends Vue {
               tooltip += `</li>`;
             });
 
-            if (neighbors.length > 5) {
-              tooltip += `<li class="more-neighbors">...and ${neighbors.length - 5} more</li>`;
+            if (neighbors.length > this.MAX_NEIGHBORS_DISPLAY) {
+              tooltip += `<li class="more-neighbors">...and ${neighbors.length - this.MAX_NEIGHBORS_DISPLAY} more</li>`;
             }
 
             tooltip += '</ul>';
             tooltip += '</div>';
           }
         } catch (e) {
-          // Silent fail - tooltip will just show basic imputation message
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Failed to parse neighbor data:', e);
+          }
+          // Tooltip will just show basic imputation message
         }
       }
     }
@@ -654,6 +664,8 @@ export default class HistoricalBuildingTable extends Vue {
 </script>
 
 <style lang="scss">
+@import '../scss/colors.scss';
+
 .historical-table-cont {
   max-width: 100%;
   overflow-x: auto;
@@ -748,13 +760,8 @@ table.historical-data {
   }
 
   tbody tr.has-imputed-data {
-    border-left: 3px solid #ff6b6b;
+    border-left: 3px solid $imputed-indicator;
     background-color: rgba(255, 107, 107, 0.08);
-  }
-
-  // Remove individual cell highlighting - entire row is highlighted instead
-  td.has-imputed-value {
-    // No additional styling needed - row handles it
   }
 
   .letter-grade {
@@ -778,7 +785,7 @@ table.historical-data {
   }
 
   .grade-disclaimer {
-    color: #ff6b6b;
+    color: $imputed-indicator;
     font-weight: bold;
     cursor: help;
     margin-left: 2px;
@@ -788,7 +795,7 @@ table.historical-data {
   }
 
   .imputed-indicator {
-    color: #ff6b6b;
+    color: $imputed-indicator;
     font-weight: bold;
     cursor: help;
     margin-left: 2px;
@@ -811,7 +818,7 @@ table.historical-data {
   margin-top: 0.5rem;
   margin-bottom: 0;
   font-size: 0.875rem;
-  color: #ff6b6b;
+  color: $imputed-indicator;
   font-style: italic;
 
   .imputed-indicator {

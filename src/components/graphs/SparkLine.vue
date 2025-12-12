@@ -204,7 +204,7 @@ export default class BarGraph extends Vue {
         .attr('cx', (d) => x(d.x))
         .attr('cy', (d) => y(d.y))
         .attr('r', this.DotRadius)
-        .attr('fill', (d) => (d.isImputed ? '#ff6b6b' : 'black'))
+        .attr('fill', (d) => (d.isImputed ? '#ff6b6b' : 'black')) // Color overridden by CSS .dot.-imputed
         .attr('tabindex', '0')
         .on('mouseover', this.mouseover.bind(this))
         .on('focusin', (event: Event, d) => this.focus(event, d))
@@ -272,7 +272,7 @@ export default class BarGraph extends Vue {
           }
         })
         .html((d) => `<tspan class="bold">${d.y.toLocaleString()}</tspan>`)
-        .style('fill', (d) => (d.isImputed ? '#ff6b6b' : 'black'))
+        .style('fill', (d) => (d.isImputed ? '#ff6b6b' : 'black')) // Color overridden by CSS .label-text.-imputed
         .style('font-size', this.LabelFontSize);
     }
   }
@@ -342,6 +342,8 @@ export default class BarGraph extends Vue {
 </script>
 
 <style lang="scss">
+@import '../../scss/colors.scss';
+
 .spark-graph-cont {
   position: relative;
 
@@ -375,11 +377,20 @@ export default class BarGraph extends Vue {
       margin-bottom: 0.25rem;
     }
     .imputed-notice {
-      color: #ff6b6b;
+      color: $imputed-indicator;
       font-size: 0.7rem;
       margin-top: 0.25rem;
       font-style: italic;
     }
+  }
+
+  // Style imputed data points
+  circle.dot.-imputed {
+    fill: $imputed-indicator !important;
+  }
+
+  text.label-text.-imputed {
+    fill: $imputed-indicator !important;
   }
 
   svg {
