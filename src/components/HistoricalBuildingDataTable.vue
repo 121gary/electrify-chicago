@@ -473,6 +473,23 @@ export default class HistoricalBuildingTable extends Vue {
   getImputedTooltip(benchmark: IHistoricData, fieldName: string): string {
     let tooltip = '<p class="imputed-tooltip-title">This value was estimated using imputation</p>';
 
+    // Add confidence level if available
+    if (benchmark.ImputationConfidence !== undefined && benchmark.ImputationConfidence !== null) {
+      const confidence = benchmark.ImputationConfidence;
+      let confidenceLabel = 'Low';
+      let confidenceClass = 'confidence-low';
+
+      if (confidence > 66) {
+        confidenceLabel = 'High';
+        confidenceClass = 'confidence-high';
+      } else if (confidence > 33) {
+        confidenceLabel = 'Medium';
+        confidenceClass = 'confidence-medium';
+      }
+
+      tooltip += `<p class="imputation-confidence ${confidenceClass}">Confidence: <strong>${confidenceLabel}</strong></p>`;
+    }
+
     // Map field names to their neighbor contribution fields
     const neighborFieldMap: { [key: string]: string } = {
       'ElectricityUse': 'NeighborsElectricityUse',
@@ -823,6 +840,30 @@ table.historical-data {
   .imputed-tooltip-title {
     margin: 0 0 0.5rem 0;
     font-weight: bold;
+  }
+
+  .imputation-confidence {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    background: rgba(255, 255, 255, 0.1);
+
+    strong {
+      font-weight: 600;
+    }
+
+    &.confidence-high strong {
+      color: #4ade80; // Green for high confidence
+    }
+
+    &.confidence-medium strong {
+      color: #fbbf24; // Yellow/amber for medium confidence
+    }
+
+    &.confidence-low strong {
+      color: #f87171; // Red for low confidence
+    }
   }
 
   .grade-disclaimer-tooltip {
