@@ -11,13 +11,13 @@ import NewTabIcon from '~/components/NewTabIcon.vue';
   },
   metaInfo() {
     return {
-      title: 'Making Sense Of Missing Data',
+      title: 'Making Sense Of Missing Data: What If Chicago Enforced Penalties for Non-Compliance?',
       meta: [
         {
           key: 'description',
           name: 'description',
           content:
-            'Learn how KNN imputation helps fill in missing building energy data to provide more complete analysis of Chicago buildings.',
+            'Explore how much revenue Chicago could generate and emissions it could reduce if it enforced building benchmarking penalties like New York City.',
         },
       ],
     };
@@ -36,8 +36,10 @@ export default class MakingSenseOfMissingData extends Vue {}
 
         <h1 id="main-content" tabindex="-1">Making Sense Of Missing Data</h1>
 
+        <h2>What If Chicago Enforced Penalties for Non-Compliance?</h2>
+
         <p class="publish-time">
-          Published <time datetime="2025-12-09">Dec. 9th, 2025</time>
+          Published <time datetime="2025-9-12">Dec. 9th, 2025</time>
         </p>
 
         <div class="table-of-contents">
@@ -45,205 +47,177 @@ export default class MakingSenseOfMissingData extends Vue {}
 
           <ul class="-spaced">
             <li>
-              <a href="#motivation">Motivation: Why Missing Data Matters</a>
+              <a href="#the-problem">The Problem: Non-Compliance Without Consequences</a>
             </li>
             <li>
-              <a href="#the-problem"
-                >The Problem: Gaps In The Benchmarking Data</a
-              >
+              <a href="#nyc-comparison">Chicago vs. New York City: A Tale of Two Ordinances</a>
             </li>
-            <li><a href="#the-solution">The Solution: KNN Imputation</a></li>
-            <li><a href="#process">How KNN Imputation Works</a></li>
-            <li><a href="#results">Results & Impact</a></li>
-            <li><a href="#limitations">Limitations & Considerations</a></li>
+            <li>
+              <a href="#imputed-data">Estimating What's Missing</a>
+            </li>
+            <li><a href="#calculator">The Fine Calculator</a></li>
+            <li><a href="#conclusion">What This Means for Chicago</a></li>
           </ul>
         </div>
 
         <p>
-          Chicago's building benchmarking data is a powerful tool for
-          understanding energy use and emissions across the city. But what
-          happens when buildings don't report all their data? Let's explore how
-          we use KNN imputation to fill in the gaps and provide more complete
-          analysis.
+          A large percentage of Chicago buildings don't report their energy data without consequence. 
+          Unlike New York City, which has stricter enforcement and penalizing structures, 
+          Chicago's Energy Benchmarking Ordinance lacks teeth. What would happen if Chicago adopted similar penalties?
         </p>
 
-        <h2 id="motivation">Motivation: Why Missing Data Matters</h2>
+        <h2 id="the-problem">The Problem: Non-Compliance Without Consequences</h2>
 
         <p>
-          When analyzing Chicago's building energy performance, missing data
-          creates several challenges:
+          Our local Energy Benchmarking Ordinance requires buildings 50,000 square feet or larger to report their energy use annually. 
+          The problem? Many buildings simply don't comply, and the City doesn't enforce the ordinance.
         </p>
 
-        <ul class="-spaced">
-          <li>
-            <strong>Incomplete Rankings:</strong> Buildings with missing data
-            can't be properly ranked against their peers
-          </li>
-          <li>
-            <strong>Skewed Statistics:</strong> City-wide averages and
-            percentiles become less accurate when data is missing
-          </li>
-          <li>
-            <strong>Lost Insights:</strong> We miss opportunities to understand
-            trends and patterns in building performance
-          </li>
-        </ul>
-
         <p>
-          Rather than simply excluding buildings with missing data, we can use
-          statistical techniques to make educated estimates based on similar
-          buildings.
-        </p>
-
-        <h2 id="the-problem">The Problem: Gaps In The Benchmarking Data</h2>
-
-        <p>
-          Buildings in Chicago are required to report their energy use
-          annually, but not all buildings report all metrics. Common types of
-          missing data include:
-        </p>
-
-        <ul class="-spaced">
-          <li>Energy use by fuel type (electricity, natural gas, steam)</li>
-          <li>Total greenhouse gas emissions</li>
-          <li>Energy Use Intensity (EUI) metrics</li>
-          <li>
-            Building characteristics like year built or gross floor area
-          </li>
-        </ul>
-
-        <p>
-          This missing data can happen for various reasons: reporting errors,
-          buildings that use unique energy sources, or incomplete energy
-          metering systems.
-        </p>
-
-        <h2 id="the-solution">The Solution: KNN Imputation</h2>
-
-        <p>
-          <strong>K-Nearest Neighbors (KNN) imputation</strong> is a
-          statistical technique that fills in missing values by looking at
-          similar data points. The basic idea:
-        </p>
-
-        <ol class="-spaced">
-          <li>
-            Find the K most similar buildings (the "nearest neighbors") that
-            <em>do</em> have the missing data
-          </li>
-          <li>
-            Use the average of those neighbors' values to fill in the missing
-            data
-          </li>
-        </ol>
-
-        <p>
-          For example, if a large office building is missing its electricity
-          use data, we find other large office buildings with similar
-          characteristics and use their average electricity use as an estimate.
-        </p>
-
-        <h2 id="process">How KNN Imputation Works</h2>
-
-        <p>Our implementation of KNN imputation follows these steps:</p>
-
-        <ol class="-spaced">
-          <li>
-            <strong>Identify Missing Values:</strong> Scan the dataset to find
-            buildings with incomplete energy data
-          </li>
-          <li>
-            <strong>Select Features:</strong> Choose which building
-            characteristics to use for finding similar buildings (e.g., property
-            type, floor area, year built)
-          </li>
-          <li>
-            <strong>Calculate Similarity:</strong> Measure the "distance"
-            between buildings based on their characteristics
-          </li>
-          <li>
-            <strong>Find Neighbors:</strong> Identify the K most similar
-            buildings that have complete data
-          </li>
-          <li>
-            <strong>Impute Values:</strong> Calculate the average of the
-            neighbors' values and fill in the missing data
-          </li>
-          <li>
-            <strong>Validate:</strong> Check that the imputed values are
-            reasonable and flag any anomalies
-          </li>
-        </ol>
-
-        <h2 id="results">Results & Impact</h2>
-
-        <p>
-          Using KNN imputation on the Chicago benchmarking data has allowed us
-          to:
-        </p>
-
-        <ul class="-spaced">
-          <li>Increase the completeness of our dataset significantly</li>
-          <li>
-            Provide more accurate city-wide statistics and building rankings
-          </li>
-          <li>
-            Identify patterns in energy use that would have been hidden by
-            missing data
-          </li>
-          <li>
-            Make the Electrify Chicago platform more useful for residents and
-            policymakers
-          </li>
-        </ul>
-
-        <h2 id="limitations">Limitations & Considerations</h2>
-
-        <p>
-          While KNN imputation is a powerful tool, it's important to understand
-          its limitations:
+          As we documented in our previous blog post
+          <a href="/blog/millions-in-missed-fines" target="_blank" rel="noopener">
+            Millions in Missed Fines
+          </a>, the lack of enforcement means buildings face little incentive to report consistently or accurately. 
+          This creates several downstream problems:
         </p>
 
         <ul class="-spaced">
           <li>
-            <strong>Estimates, Not Facts:</strong> Imputed values are educated
-            guesses based on similar buildings, not actual measurements
+            <strong>Incomplete Data:</strong> Large gaps in the dataset make it harder to understand citywide energy use and emissions
           </li>
           <li>
-            <strong>Unique Buildings:</strong> Buildings with very unusual
-            characteristics may not have good "neighbors" for comparison
+            <strong>Anomalous Reporting:</strong> Without oversight, some buildings submit clearly erroneous data (as we explore in
+            <a href="/blog/how-we-grade-buildings" target="_blank" rel="noopener">
+              How We Grade Buildings
+            </a>)
           </li>
           <li>
-            <strong>Preserves Patterns:</strong> Imputation tends to fill in
-            values that match existing patterns, which can reduce the appearance
-            of outliers
+            <strong>Lost Revenue:</strong> The City misses out on millions in potential fine revenue
           </li>
           <li>
-            <strong>Transparency:</strong> We clearly mark imputed data so users
-            know which values are estimates versus actual reported data
+            <strong>Environmental Impact:</strong> Buildings aren't accountable for the role they play 
+            in reducing emissions and improving energy efficiency
           </li>
         </ul>
 
-        <h2>Conclusion</h2>
+        <h2 id="nyc-comparison">Chicago vs. New York City: A Tale of Two Ordinances</h2>
 
         <p>
-          KNN imputation helps us make the most of Chicago's building energy
-          data by filling in gaps intelligently. While it's not perfect, it
-          provides a more complete picture of building performance across the
-          city and helps identify opportunities for energy efficiency and
-          decarbonization.
+          New York City has taken building emissions seriously, implementing not just benchmarking requirements 
+          but also emissions caps with compounding penalties. Here's how the two cities compare:
+        </p>
+
+        <div class="ordinance-comparison-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Ordinance</th>
+                <th>Coverage</th>
+                <th>Requirements</th>
+                <th>Penalties for Non-Compliance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Chicago Energy Benchmarking</strong></td>
+                <td>Buildings ≥ 50,000 sq ft</td>
+                <td>Submit energy benchmarking data</td>
+                <td>$100 for first violation, plus up to $25 per day</td>
+              </tr>
+              <tr>
+                <td><strong>NYC Local Law 84 (LL84)</strong><br/>Benchmarking</td>
+                <td>Buildings ≥ 25,000 sq ft</td>
+                <td>Submit energy benchmarking data</td>
+                <td>$500 per quarter for failure to file</td>
+              </tr>
+              <tr>
+                <td><strong>NYC Local Law 97 (LL97)</strong><br/>Emissions Caps</td>
+                <td>Buildings > 25,000 sq ft</td>
+                <td>Meet GHG emissions caps and file annual emissions report</td>
+                <td>
+                  <ul class="penalty-list">
+                    <li>$268/kCO₂e in excess emissions</li>
+                    <li>$0.50/sq ft per month for late reporting</li>
+                    <li>≤ $500k for false reporting</li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The difference is clear. Chicago's penalties are minimal and rarely enforced. 
+          New York's penalties are substantial and actively enforced, 
+          thereby creating real financial incentives for buildings to comply and reduce emissions.
+        </p>
+
+        <h2 id="imputed-data">Estimating What's Missing</h2>
+
+        <p>
+          Since more than 10% of required Chicago buildings don't report, 
+          we've created a dataset that estimates what those missing values would be 
+          using K-Nearest Neighbors (KNN) imputation. 
+          This statistical technique fills in missing data by finding similar buildings 
+          that did report and using their values as educated estimates.
         </p>
 
         <p>
-          Have feedback on our approach to missing data? Let us know by
-          <a
-            href="https://github.com/vkoves/electrify-chicago/issues/new"
-            target="_blank"
-            rel="noopener"
-          >
-            filing an issue on our GitHub
-            <NewTabIcon />
-          </a>
+          For more details on how this imputation works, check out this presentation on our imputation methodology
+        </p>
+
+        <p>
+          PLACEHOLDER FOR SLIDE DECK
+        </p>
+
+        <p>
+          Using this complete dataset made up of actual reported data plus imputed estimates, 
+          we can better explore what would happen if Chicago imposed NYC-style penalties on all buildings, 
+          including those that aren't currently reporting.
+        </p>
+
+        <h2 id="calculator">The Fine Calculator</h2>
+
+        <p>
+          Use the interactive visualization below to explore how much buildings would pay in fines under different penalty scenarios. 
+          Adjust the controls to see how changing the GHG emissions cap or late reporting penalties would impact buildings of different sizes.
+        </p>
+
+        <div class="calculator-placeholder">
+          <p><em>[Interactive visualization will be added here]</em></p>
+
+          <h3>Visualization:</h3>
+          <ul>
+            <li><strong>X-axis:</strong> Building size buckets (by sqft), split into reporting and not reporting</li>
+            <li><strong>Y-axis:</strong> Total GHG
+            <li><strong>Annotations:</strong> Selected caps marked by interactive control, 
+            such that everything above the cap is a different color and contributes to total fines</li>
+          </ul>
+
+          <h3>Planned Controls:</h3>
+          <ul>
+            <li><strong>GHG Cap:</strong> Set the emissions limit (kCO₂e per square foot) at different size cohorts</li>
+            <li><strong>Late Penalty:</strong> Set the fine for late or missing reports</li>
+            <li><strong>Estimated Value Toggle:</strong> Include or exclude imputed data</li>
+            <li><strong>Year</strong> Switch between years, can be most recent year at first</li>
+          </ul>
+
+          <h3>Annotation:</h3>
+          <ul>
+            <li><strong>Potential Fines:</strong> Dynamic number representing fines produced by user controls</li>
+          </ul>
+
+          <h3>Notes:</h3>
+          <ul>
+            <li><strong>Defaults:</strong> Current Chicago fines and current NYC fines applied to Chicago dataset</li>
+          </ul>
+        </div>
+
+        <h2 id="conclusion">What This Means for Chicago</h2>
+
+        <p>
+          Enforcing building emissions penalties isn't just about revenue, it's about creating accountability and transparency. 
+          New York City's approach shows what's possible.
         </p>
       </div>
     </div>
@@ -282,6 +256,67 @@ export default class MakingSenseOfMissingData extends Vue {}
     }
   }
 
+  // Ordinance comparison table
+  .ordinance-comparison-table {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid $grey;
+
+      th, td {
+        padding: 0.75rem;
+        text-align: left;
+        border: 1px solid $grey;
+      }
+
+      thead {
+        background-color: $grey-light;
+
+        th {
+          font-weight: bold;
+        }
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: $off-white;
+      }
+
+      .penalty-list {
+        margin: 0;
+        padding-left: 1.25rem;
+
+        li {
+          margin: 0.25rem 0;
+        }
+      }
+    }
+  }
+
+  // Calculator placeholder
+  .calculator-placeholder {
+    background: $off-white;
+    border: 2px dashed $grey-dark;
+    border-radius: $brd-rad-small;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+
+    h3 {
+      margin-top: 1.5rem;
+      font-size: 1.125rem;
+    }
+
+    ul {
+      text-align: left;
+      max-width: 40rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
   // Center images
   img {
     display: block;
@@ -292,6 +327,16 @@ export default class MakingSenseOfMissingData extends Vue {}
   @media (max-width: $mobile-max-width) {
     img {
       width: 100%;
+    }
+
+    .ordinance-comparison-table {
+      font-size: 0.875rem;
+
+      table {
+        th, td {
+          padding: 0.5rem;
+        }
+      }
     }
   }
 }
